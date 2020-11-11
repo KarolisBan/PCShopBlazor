@@ -1,0 +1,23 @@
+﻿@page "/Shop"
+@inject HttpClient Http;
+@using PCShopBlazor.Data;
+@using System.Net.Http; // for HttpClient
+@using System.Net.Http.Headers; // ?Json? for HttpClientJsonExtensions
+
+<h1>PC Shop</h1>
+
+<p>Hello</p>
+
+
+@code {
+    List<Part> partsList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        partsList = new List<Part>();
+
+        partsList = await Http.GetJsonAsync<List<Part>>("https://localhost:44331/api/parts");
+
+        await base.OnInitializedAsync();
+    }
+}
