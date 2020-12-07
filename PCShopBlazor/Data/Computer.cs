@@ -19,6 +19,7 @@ namespace PCShopBlazor.Data
         [Required]
         public string Manufacturer { get; set; }
         public float Price { get; set; }
+        public int BuyerId { get; set; }
 
         public int OrderId { get; set; }
         public Order Order { get; set; }

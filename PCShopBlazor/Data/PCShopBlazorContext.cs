@@ -14,6 +14,8 @@ namespace PCShopBlazor.Data
         {
         }
 
+        public DbSet<User> Users { get; set; }
+
         public DbSet<Part> Parts { get; set; }
 
         public DbSet<Computer> Computers { get; set; }

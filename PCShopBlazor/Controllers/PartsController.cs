@@ -27,7 +27,15 @@ namespace PCShopBlazor.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Part>>> GetPart()
         {
-            return await _context.Parts.ToListAsync();
+            if (await CheckAdmin())
+            {
+                return await _context.Parts.ToListAsync();
+            }
+            else //if(await CheckAuthorization())
+            {
+                User user = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);
+                return await _context.Parts.Where(e => e.BuyerId == user.Id).ToListAsync();
+            }
         }
 
         // GET: api/Parts/5
@@ -35,6 +43,11 @@ namespace PCShopBlazor.Controllers
         public async Task<ActionResult<Part>> GetPart(int id)
         {
             var part = await _context.Parts.FindAsync(id);
+
+            if (!await CheckAuthorization(part))
+            {
+                return Unauthorized();
+            }
 
             if (part == null)
             {
@@ -50,6 +63,11 @@ namespace PCShopBlazor.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPart(int id, Part part)
         {
+            if (!await CheckAdmin())
+            {
+                return Unauthorized();
+            }
+
             if (id != part.Id)
             {
                 return BadRequest();
@@ -82,6 +100,11 @@ namespace PCShopBlazor.Controllers
         [HttpPost]
         public async Task<ActionResult<Part>> PostPart(Part part)
         {
+            if (!await CheckAdmin())
+            {
+                return Unauthorized();
+            }
+
             _context.Parts.Add(part);
             await _context.SaveChangesAsync();
 
@@ -92,6 +115,11 @@ namespace PCShopBlazor.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Part>> DeletePart(int id)
         {
+            if (!await CheckAdmin())
+            {
+                return Unauthorized();
+            }
+
             var part = await _context.Parts.FindAsync(id);
             if (part == null)
             {
@@ -107,6 +135,24 @@ namespace PCShopBlazor.Controllers
         private bool PartExists(int id)
         {
             return _context.Parts.Any(e => e.Id == id);
+        }
+
+        public async Task<bool> CheckAuthorization(Part part)
+        {
+            User requestedUser = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);
+            if (requestedUser.Type == "Admin" || requestedUser.Id == part.BuyerId)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> CheckAdmin()
+        {
+            User requestedUser = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);
+            if (requestedUser.Type == "Admin")
+                return true;
+            else
+                return false;
         }
     }
 }

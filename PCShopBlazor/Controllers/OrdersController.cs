@@ -12,7 +12,7 @@ using PCShopBlazor.Services;
 namespace PCShopBlazor.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles = RolesService.Admin)]
+    [Authorize(Roles = RolesService.Admin + "," + RolesService.BasicUser)]
     [ApiController]
     public class OrdersController : ControllerBase
     {
@@ -27,7 +27,15 @@ namespace PCShopBlazor.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Order>>> GetOrder()
         {
-            return await _context.Orders.ToListAsync();
+            if (await CheckAdmin())
+            {
+                return await _context.Orders.ToListAsync();
+            }
+            else //if(await CheckAuthorization())
+            {
+                User user = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);
+                return await _context.Orders.Where(e => e.BuyerId == user.Id).ToListAsync();
+            }
         }
 
         // GET: api/Orders/5
@@ -35,6 +43,11 @@ namespace PCShopBlazor.Controllers
         public async Task<ActionResult<Order>> GetOrder(int id)
         {
             var order = await _context.Orders.FindAsync(id);
+
+            if (!await CheckAuthorization(order))
+            {
+                return Unauthorized();
+            }
 
             if (order == null)
             {
@@ -50,6 +63,11 @@ namespace PCShopBlazor.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutOrder(int id, Order order)
         {
+            if (!await CheckAdmin())
+            {
+                return Unauthorized();
+            }
+
             if (id != order.Id)
             {
                 return BadRequest();
@@ -82,6 +100,10 @@ namespace PCShopBlazor.Controllers
         [HttpPost]
         public async Task<ActionResult<Order>> PostOrder(Order order)
         {
+            if (!await CheckAdmin())
+            {
+                return Unauthorized();
+            }
             try
             {
                 _context.Orders.Add(order);
@@ -100,6 +122,10 @@ namespace PCShopBlazor.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Order>> DeleteOrder(int id)
         {
+            if (!await CheckAdmin())
+            {
+                return Unauthorized();
+            }
             var order = await _context.Orders.FindAsync(id);
             if (order == null)
             {
@@ -122,6 +148,24 @@ namespace PCShopBlazor.Controllers
         private bool OrderExists(int id)
         {
             return _context.Orders.Any(e => e.Id == id);
+        }
+
+        public async Task<bool> CheckAuthorization(Order order)
+        {
+            User requestedUser = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);
+            if (requestedUser.Type == "Admin" || requestedUser.Id == order.BuyerId)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> CheckAdmin()
+        {
+            User requestedUser = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);
+            if (requestedUser.Type == "Admin")
+                return true;
+            else
+                return false;
         }
     }
 }

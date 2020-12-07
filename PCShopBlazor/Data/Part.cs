@@ -16,8 +16,8 @@ namespace PCShopBlazor.Data
         public string Type { get; set; }
         [Required]
         public string Model { get; set; }
-
         public float Value { get; set; }
+        public int BuyerId { get; set; }
 
         public int ComputerId { get; set; }
         public Computer Computer { get; set; }
