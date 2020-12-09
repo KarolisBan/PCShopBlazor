@@ -1,0 +1,119 @@
+﻿@page "/orders"
+
+@using PCShopBlazor.Extension.ViewModels;
+@using PCShopBlazor.UI.Services;
+<!--@using RoomRental.Domain.Entities.RoomRental;
+@using RoomRental.UI.Modals; -->
+<!-- inject LoginService loginService -->
+@inject ShopService shopService
+@inject NavigationManager navManager
+
+<h2>Orders</h2>
+
+@if (isAdmin)//loginService.IsLoggedIn && loginService.LoggedInUser.Role == "Administrator")
+{
+    <NavLink href="orders/add">
+        <img src="images/add.svg" class="image-svg image-svg-add" />
+    </NavLink>
+    <br />
+    <br />
+}
+
+@if (orders != null)
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>
+                    Buyer Name
+                </th>
+                <th>
+                    Order Number
+                </th>
+                <th>
+                    Order Price
+                </th>
+                @if (isAdmin)
+                {
+                    <th>
+                        Edit
+                    </th>
+                    <th>
+                        Remove
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in orders)
+            {
+                <tr>
+                    <td>
+                        @order.BuyerName
+                    </td>
+                    <td>
+                        @order.OrderNumber
+                    </td>
+                    <td>
+                        @order.OrderPrice
+                    </td>
+                    @if (isAdmin)
+                    {
+                        <td>
+                            <NavLink href="@($"parts/edit/{order.Id}")">
+                                <img src="images/edit.svg" class="image-svg" />
+                            </NavLink>
+                        </td>
+                        <td>
+                            <img src="images/delete.svg" class="image-svg" @onclick="e => IsModalOpened = true" />
+
+                            @if (false /*SelectedButton != null*/)
+                            {
+                                <p>Deleted ir refreshintis uz 2s</p>
+                            }
+                            <Modal @bind-Open="IsModalOpened" Close="OnClose">
+                                <form method="dialog">
+                                    <p>
+                                        Do you really want to delete this?
+                                    </p>
+                                    <menu>
+                                        <button value="cancel">Cancel</button>
+                                        <button value="@order.Id">I'm sure</button>
+                                    </menu>
+                                </form>
+                            </Modal>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    IEnumerable<OrderViewModel> orders;
+    public bool IsModalOpened { get; set; }
+    public string SelectedButton { get; set; }
+    bool isAdmin;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //loginService.ReloadUI += async () => await InvokeAsync(() => StateHasChanged());
+
+        orders = await shopService.GetOrdersAsync();
+        isAdmin = await shopService.CheckAdmin();
+
+    }
+
+    async void OnClose(string value)
+    {
+        SelectedButton = value;
+        if (SelectedButton != "cancel" && SelectedButton != "")
+        {
+            await shopService.DeleteOrderAsync(Int32.Parse(SelectedButton));
+            navManager.NavigateTo("/orders", forceLoad: true);
+        }
+    }
+}

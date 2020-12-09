@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PCShopBlazor.Data;
 using PCShopBlazor.Services;
+using PCShopBlazor.Variables.Data;
 
 namespace PCShopBlazor.Controllers
 {       //
@@ -35,7 +36,7 @@ namespace PCShopBlazor.Controllers
             else //if(await CheckAuthorization())
             {
                 User user = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);
-                return await _context.Computers.Where(e => e.BuyerId == user.Id).ToListAsync();
+                return await _context.Computers.Where(e => e.CreatorId == user.Id).ToListAsync();
             }
         }
 
@@ -223,12 +224,14 @@ namespace PCShopBlazor.Controllers
         public async Task<bool> CheckAuthorization(Computer computer)
         {
             User requestedUser = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);
-            if (requestedUser.Type == "Admin" || requestedUser.Id == computer.BuyerId)
+            if (requestedUser.Type == "Admin" || requestedUser.Id == computer.CreatorId)
                 return true;
             else
                 return false;
         }
 
+        [HttpGet]
+        [Route("/api/CheckAdmin")]
         public async Task<bool> CheckAdmin()
         {
             User requestedUser = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);

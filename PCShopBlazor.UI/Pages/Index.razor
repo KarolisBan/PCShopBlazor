@@ -1,0 +1,30 @@
+﻿@page "/"
+@using PCShopBlazor.Extension.ViewModels;
+@using PCShopBlazor.UI.Services;
+
+@inject ShopService shopService
+@inject NavigationManager navManager
+
+@if(isLoggedin)
+{
+<h2>Welcome @user.Name</h2>
+}
+else
+{
+    <Login OnSuccessfulLogin="async () => await InvokeAsync(() => StateHasChanged())"></Login>
+}
+
+@code {
+
+    bool isLoggedin;
+    UserViewModel user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoggedin = await shopService.CheckLogin();
+        if(isLoggedin)
+        {
+            user = await shopService.GetLoggedUser();
+        }
+    }
+}

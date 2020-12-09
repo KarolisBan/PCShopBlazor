@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PCShopBlazor.Data;
 using PCShopBlazor.Services;
+using PCShopBlazor.Variables.Data;
 
 namespace PCShopBlazor.Controllers
 {

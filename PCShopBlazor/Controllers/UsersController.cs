@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PCShopBlazor.Data;
 using PCShopBlazor.Services;
+using PCShopBlazor.Variables.Data;
 
 namespace PCShopBlazor.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles = RolesService.Admin + "," + RolesService.BasicUser)]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -21,6 +21,28 @@ namespace PCShopBlazor.Controllers
         public UsersController(PCShopBlazorContext context)
         {
             _context = context;
+        }
+
+        [HttpGet]
+        [Route("/api/CheckLogin")]
+        public async Task<bool> CheckLogin()
+        {
+            User requestedUser = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);
+            if (requestedUser != null)
+                return true;
+            else
+                return false;
+        }
+
+        [HttpGet]
+        [Route("/api/GetLoggedUser")]
+        public async Task<ActionResult<User>> GetLoggedUser()
+        {
+            User requestedUser = await _context.Users.FirstOrDefaultAsync(e => e.Name == User.Identity.Name);
+            if (requestedUser != null)
+                return requestedUser;
+            else
+                return null;
         }
 
         // GET: api/Users

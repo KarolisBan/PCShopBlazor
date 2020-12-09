@@ -1,0 +1,24 @@
+﻿@using Blazored.Modal.Services;
+@using Blazored.Modal;
+
+<div>
+    @($"Are you sure you want to delete {Item}?")
+    <br />
+    <br />
+    @ItemName
+    <div>
+        <button @onclick="Yes">Yes</button>
+        <button @onclick="No">No</button>
+    </div>
+</div>
+
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter] public string ItemName { get; set; }
+    [Parameter] public string Item { get; set; }
+
+    async Task Yes() => await BlazoredModal.Close(ModalResult.Ok(true));
+    async Task No() => await BlazoredModal.Cancel();
+}

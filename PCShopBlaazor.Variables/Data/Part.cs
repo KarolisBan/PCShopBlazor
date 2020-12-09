@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PCShopBlazor.Data
+namespace PCShopBlazor.Variables.Data
 {
     public class Part
     {
@@ -17,7 +17,7 @@ namespace PCShopBlazor.Data
         [Required]
         public string Model { get; set; }
         public float Value { get; set; }
-        public int BuyerId { get; set; }
+        public int CreatorId { get; set; }
 
         public int ComputerId { get; set; }
         public Computer Computer { get; set; }

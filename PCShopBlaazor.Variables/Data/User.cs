@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PCShopBlazor.Data
+namespace PCShopBlazor.Variables.Data
 {
     public class User
     {

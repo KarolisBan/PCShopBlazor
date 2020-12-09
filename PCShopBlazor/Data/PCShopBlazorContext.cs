@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using PCShopBlazor.Data;
+using PCShopBlazor.Variables.Data;
 
 namespace PCShopBlazor.Data
 {

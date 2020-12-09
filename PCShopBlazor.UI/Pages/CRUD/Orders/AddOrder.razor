@@ -1,0 +1,74 @@
+﻿@page "/orders/add"
+@using PCShopBlazor.Extension.ViewModels;
+@using PCShopBlazor.UI.Services;
+
+@inject ShopService shopService
+@inject NavigationManager navManager
+
+
+<div class="loader" style="@($"opacity: {(loaded ? 0 : 1)};")"></div>
+
+@if (!isAdmin)
+{
+    <h2>Oops! This user is unauthorized to view this page. (403)</h2>
+}
+else
+{
+    <h2>Add a new order</h2>
+
+    @if (loaded)
+    {
+        <div class="edit-table">
+            <div>
+                <h3>Order Number</h3>
+                <input type="text" class="styled-input" placeholder="Order Number" spellcheck="false" @bind-value="newOrder.OrderNumber" />
+            </div>
+            <div>
+                <h3>Order Price</h3>
+                <input type="number" class="styled-input" placeholder="Order Price" spellcheck="false" @bind-value="newOrder.OrderPrice" />
+            </div>
+            <div>
+                <h3>Client</h3>
+                <select  @bind="newOrder.BuyerId" name="Orders">
+                    @foreach (UserViewModel user in users)
+                    {
+                        <option value="@user.Id">@user.Name</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <button @onclick="AddNewOrder" class="btn btn-primary">Add a new Order</button>
+            </div>
+        </div>
+    }
+}
+
+
+
+
+
+@code {
+    //[CascadingParameter] public IModalService Modal { get; set; }
+
+    OrderViewModel newOrder;
+    IEnumerable<UserViewModel> users;
+
+    bool loaded => newOrder != null;
+    bool isAdmin;
+
+    protected override async Task OnInitializedAsync()
+    {
+        newOrder = new OrderViewModel();
+        users = await shopService.GetUsersAsync();
+        isAdmin = await shopService.CheckAdmin();
+
+        shopService.ReloadUI += async () => await InvokeAsync(() => StateHasChanged());
+    }
+
+    protected async void AddNewOrder()
+    {
+        newOrder.BuyerName = users.FirstOrDefault(e => e.Id == newOrder.BuyerId).Name;
+        newOrder.Id = await shopService.InsertOrderAsync(newOrder);
+        navManager.NavigateTo("/Orders");
+    }
+}

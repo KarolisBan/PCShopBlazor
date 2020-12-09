@@ -1,0 +1,51 @@
+﻿@using PCShopBlazor.UI.Services;
+@using PCShopBlazor.Extension.ViewModels;
+
+@inject ShopService shopService
+@inject NavigationManager navManager
+
+<h3>Log in</h3>
+
+<div style="width: 370px">
+    <input placeholder="Username" type="text" class="styled-input" @bind-value="username" />
+    <br />
+    <input placeholder="Password" type="password" class="styled-input" @bind-value="password" />
+    <br />
+    <br />
+    <button @onclick="TryLogIn" class="btn btn-primary">Log in!</button>
+    <br />
+    <br />
+    <div style="transition: color 1s ease-out; color: @(showError? "rgba(0, 0, 0, 1)" : "rgba(0, 0, 0, 0)")">
+        Invalid login credentials. Please try again.
+    </div>
+</div>
+
+@code {
+    //[CascadingParameter] public IModalService Modal { get; set; }
+
+    string username = "karolis";
+    string password = "admin";
+    bool showError;
+
+    [Parameter]
+    public Action OnSuccessfulLogin { get; set; }
+
+    protected async void TryLogIn()
+    {
+        var success = await shopService.Login(new Controllers.LoginRequest{ UserName = username, Password = password }).ConfigureAwait(false);
+        if (success)
+        {
+            OnSuccessfulLogin.Invoke();
+            navManager.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
+            showError = true;
+            await Task.Delay(1);
+            await InvokeAsync(() => StateHasChanged());
+            await Task.Delay(1500);
+            showError = false;
+            await InvokeAsync(() => StateHasChanged());
+        }
+    }
+}

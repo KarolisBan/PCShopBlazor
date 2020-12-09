@@ -1,0 +1,62 @@
+﻿@using PCShopBlazor.UI.Services;
+@inject ShopService shopService
+
+<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">PCShopBlazor.UI</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </li>
+       @if(isLogged)
+        { 
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="orders">
+                    <span class="oi oi-document" aria-hidden="true"></span> Orders
+                </NavLink>
+            </li>
+            if (isAdmin)
+            {
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="parts">
+                        <span class="oi oi-hard-drive" aria-hidden="true"></span> Parts
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="computers">
+                        <span class="oi oi-monitor" aria-hidden="true"></span> Computers
+                    </NavLink>
+                </li>
+            }
+       }
+    </ul>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+    bool isAdmin;
+    bool isLogged;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLogged = await shopService.CheckLogin();
+        if (isLogged)
+        {
+            isAdmin = await shopService.CheckAdmin();
+        }
+    }
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

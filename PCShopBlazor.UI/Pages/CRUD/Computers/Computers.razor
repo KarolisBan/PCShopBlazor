@@ -1,0 +1,146 @@
+﻿@page "/computers"
+
+@using PCShopBlazor.Extension.ViewModels;
+@using PCShopBlazor.UI.Services;
+@using Blazored.Modal.Services;
+@using Blazored.Modal; 
+
+<!-- inject LoginService loginService -->
+@inject ShopService shopService
+@inject NavigationManager navManager
+@inject IJSRuntime JSRuntime
+
+<h2>Computers</h2>
+
+@if (isAdmin)
+{
+    <NavLink href="computers/add">
+        <img src="images/add.svg" class="image-svg image-svg-add" />
+    </NavLink>
+    <br />
+    <br />
+}
+
+@if (computers != null)
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>
+                    Manufacturer
+                </th>
+                <th>
+                    Price
+                </th>
+                <th>
+                    Buyer name
+                </th>
+                @if (isAdmin)
+                {
+                    <th>
+                        Edit
+                    </th>
+                    <th>
+                        Remove
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var computer in computers)
+            {
+                <tr>
+                    <td>
+                        @computer.Manufacturer
+                    </td>
+                    <td>
+                        @computer.Price
+                    </td>
+                    <td>
+                        @computer.CreatorId
+                    </td>
+                    @if (isAdmin)
+                    {
+                        <td>
+                            <NavLink href="@($"parts/edit/{computer.Id}")">
+                                <img src="images/edit.svg" class="image-svg" />
+                            </NavLink>
+                        </td>
+                        <td>
+                            <img src="images/delete.svg" class="image-svg" @onclick="() => OnDelete(computer)" /> @*@onclick="e => IsModalOpened = true" />*@
+
+                            @if (false /*SelectedButton != null*/)
+                            {
+                                <p>Deleted ir refreshintis uz 2s</p>
+                            }
+                            @*<Modal @bind-Open="IsModalOpened" Close="OnClose">
+                                <form method="dialog">
+                                    <p>
+                                        Do you really want to delete this?
+                                    </p>
+                                    <menu>
+                                        <button value="cancel">Cancel</button>
+                                        <button value="@computer.Id">I'm sure</button>
+                                    </menu>
+                                </form>
+                            </Modal>*@
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [CascadingParameter] public IModalService modalCreator { get; set; }
+    IEnumerable<ComputerViewModel> computers;
+    public bool IsModalOpened { get; set; }
+    public string SelectedButton { get; set; }
+    bool isAdmin;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //loginService.ReloadUI += async () => await InvokeAsync(() => StateHasChanged());
+
+        computers = await shopService.GetComputersAsync();
+        isAdmin = await shopService.CheckAdmin();
+    }
+
+    async void OnClose(string value)
+    {
+        SelectedButton = value;
+        if (SelectedButton != "cancel" && SelectedButton != "")
+        {
+            await shopService.DeleteComputerAsync(Int32.Parse(SelectedButton));
+            navManager.NavigateTo("/computers", forceLoad: true);
+        }
+    }
+
+    protected async void OnDelete(ComputerViewModel computer)
+    {
+        ModalParameters parameters = new ModalParameters();
+        parameters.Add("ItemName", computer.Name);
+        parameters.Add("Item", "computer");
+
+        ModalOptions options = new ModalOptions()
+        {
+            Animation = ModalAnimation.FadeInOut(0.475),
+            HideCloseButton = true,
+            //Class = "custom-modal"
+        };
+
+        var modal = modalCreator.Show<Delete>("Delete", parameters, options);
+        var deleteResult = await modal.Result;
+
+        if (!deleteResult.Cancelled)
+        {
+            await shopService.DeleteComputerAsync(Int32.Parse(SelectedButton));
+            computers = await shopService.GetComputersAsync();
+            StateHasChanged();
+        }
+    }
+
+}
