@@ -8,7 +8,7 @@
 
 <div class="loader" style="@($"opacity: {(loaded ? 0 : 1)};")"></div>
 
-@if (isAdmin)
+@if (!isAdmin)
 {
     <h2>Oops! This user is unauthorized to view this page. (403)</h2>
 }
